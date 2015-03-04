@@ -4,7 +4,7 @@ using DapperExtensions.Mapper;
 
 namespace SquidReports.DataCollector.Plugin.Test
 {
-    public class TestData
+    public class TestData : ICollectible
     {
         public TestData(int data)
         {

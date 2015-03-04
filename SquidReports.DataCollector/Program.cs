@@ -21,7 +21,8 @@ namespace SquidReports.DataCollector
         public static void DataTest(object sender, EventArgs e)
         {
             CollectorEventArgs args = (CollectorEventArgs)e;
-            string data = args.DataJson;
+            //string data = args.DataJson;
+            ICollectible data = args.Data;
 
             Console.WriteLine("Data: {0}", data);
         }

@@ -6,5 +6,7 @@ namespace SquidReports.DataCollector.Interface
     {
         event EventHandler DataCollected;
         event EventHandler MessageLogged;
+
+        void Execute();
     }
 }

@@ -6,17 +6,11 @@ namespace SquidReports.DataCollector.Interface
 {
     public class CollectorEventArgs : EventArgs
     {
-        public CollectorEventArgs(dynamic data)
+        public CollectorEventArgs(ICollectible data)
         {
-            this.DataType = data.GetType();
-            this.DataJson = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.None,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
-            });
+            this.Data = data;
         }
 
-        public Type DataType    { get; set; }
-        public string DataJson  { get; set; }
+        public ICollectible Data { get; set; }
     }
 }
