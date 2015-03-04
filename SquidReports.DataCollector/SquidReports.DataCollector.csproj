@@ -44,6 +44,7 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -64,10 +65,17 @@
       <Project>{3b58a5c3-a625-4c37-bde2-69a998f1e838}</Project>
       <Name>SquidReports.DataCollector.Interface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SquidReports.DataCollector.Plugin.BES\SquidReports.DataCollector.Plugin.BES.csproj">
+      <Project>{e2c2228d-b1d0-4e0f-9956-f2481998e568}</Project>
+      <Name>SquidReports.DataCollector.Plugin.BES</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SquidReports.DataCollector.Plugin.Test\SquidReports.DataCollector.Plugin.Test.csproj">
       <Project>{ac579173-906c-4d77-b95a-25ca51ea3301}</Project>
       <Name>SquidReports.DataCollector.Plugin.Test</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="API\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

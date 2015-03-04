@@ -7,6 +7,9 @@ namespace SquidReports.DataCollector.Interface
         event EventHandler DataCollected;
         event EventHandler MessageLogged;
 
+        DbRelay DbRelay { get; set; }
+
+        void Init(DbRelay dbRelay);
         void Execute();
     }
 }

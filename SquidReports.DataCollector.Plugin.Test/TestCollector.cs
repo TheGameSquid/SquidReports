@@ -8,6 +8,13 @@ namespace SquidReports.DataCollector.Plugin.Test
         public event EventHandler DataCollected;
         public event EventHandler MessageLogged;
 
+        public DbRelay DbRelay { get; set; }
+
+        public void Init(DbRelay dbRelay)
+        {
+
+        }
+
         public void Execute()
         {
             for (int index = 0; index < 10; index++)

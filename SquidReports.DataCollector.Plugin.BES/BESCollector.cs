@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Reflection;
 using SquidReports.DataCollector.Interface;
+using SquidReports.DataCollector.Plugin.BES.API;
+using SquidReports.DataCollector.Plugin.BES.Model;
+using LambdaSqlBuilder;
 
 namespace SquidReports.DataCollector.Plugin.BES
 {
@@ -8,9 +14,39 @@ namespace SquidReports.DataCollector.Plugin.BES
         public event EventHandler DataCollected;
         public event EventHandler MessageLogged;
 
+        public DbRelay DbRelay { get; set; }
+
+        public BesApi API { get; set; }
+
+        public void Init(DbRelay dbRelay)
+        {
+            // Let's make sure to explicitly call the .dll.config file
+            Configuration appConfig = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
+
+            this.API = new BesApi(
+                                    appConfig.AppSettings.Settings["ApiEndpoint"].Value,
+                                    appConfig.AppSettings.Settings["ApiUser"].Value,
+                                    appConfig.AppSettings.Settings["ApiPassword"].Value
+                                );
+            this.DbRelay = dbRelay;
+        }
+
         public void Execute()
         {
+            CollectActions();
+        }
 
+        public void CollectActions()
+        {
+            MessageLogged(this, new LogEventArgs("Collecting Actions", LogLevel.Debug));
+            //List<Model.Action> actions = API.GetActions();
+
+            //foreach (Model.Action action in actions)
+            //{
+            //    DataCollected(this, new CollectorEventArgs(action));
+            //}
+
+            DbRelay.Get<Model.Action>(new SqlLam<Model.Action>(a => a.Name == "The Way Of The Future"));
         }
     }
 }

@@ -10,16 +10,16 @@ namespace SquidReports.DataCollector.Plugin.BES.Model
             // Empty constructor for RestSharp
         }
 
-        public Action(int actionID, int siteID, string name)
+        public Action(int actionID, string siteID, string name)
         {
             this.ActionID = actionID;
             this.SiteID = siteID;
             this.Name = name;
         }
 
-        public int ID           { get; set; }             // Identity ID assigned by DB
-        public int ActionID     { get; set; }       // Identity ID assigned by API
-        public int SiteID       { get; set; }
+        public int ID           { get; set; }   // Identity ID assigned by DB
+        public int ActionID     { get; set; }   // Identity ID assigned by API
+        public string SiteID    { get; set; }
         public string Name      { get; set; }
     }
 }
