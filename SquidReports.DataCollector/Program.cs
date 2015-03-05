@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Runtime.Serialization.Formatters;
+using SquidReports.DataCollector.API;
 using SquidReports.DataCollector.Interface;
 using SquidReports.DataCollector.Plugin.Test;
 using SquidReports.DataCollector.Plugin.BES;
@@ -12,7 +13,8 @@ namespace SquidReports.DataCollector
         static void Main(string[] args)
         {
             BESCollector collector = new BESCollector();
-            collector.Init(new DbRelay(ConfigurationManager.ConnectionStrings["DB"].ConnectionString));
+            IDbRelay dbRelay = new DbRelay(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+            collector.Init(dbRelay);
             collector.DataCollected += DataTest;
             collector.MessageLogged += LogTest;
             collector.Execute();

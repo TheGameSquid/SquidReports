@@ -14,11 +14,11 @@ namespace SquidReports.DataCollector.Plugin.BES
         public event EventHandler DataCollected;
         public event EventHandler MessageLogged;
 
-        public DbRelay DbRelay { get; set; }
+        public IDbRelay DbRelay { get; set; }
 
         public BesApi API { get; set; }
 
-        public void Init(DbRelay dbRelay)
+        public void Init(IDbRelay dbRelay)
         {
             // Let's make sure to explicitly call the .dll.config file
             Configuration appConfig = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
@@ -46,6 +46,7 @@ namespace SquidReports.DataCollector.Plugin.BES
             //    DataCollected(this, new CollectorEventArgs(action));
             //}
             IEnumerable<Model.Action> actions = DbRelay.Get<Model.Action>(new { ActionID = 63 });
+            Console.WriteLine("");
         }
     }
 }

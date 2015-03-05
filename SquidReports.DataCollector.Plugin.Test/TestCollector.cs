@@ -8,9 +8,9 @@ namespace SquidReports.DataCollector.Plugin.Test
         public event EventHandler DataCollected;
         public event EventHandler MessageLogged;
 
-        public DbRelay DbRelay { get; set; }
+        public IDbRelay DbRelay { get; set; }
 
-        public void Init(DbRelay dbRelay)
+        public void Init(IDbRelay dbRelay)
         {
 
         }
