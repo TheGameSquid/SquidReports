@@ -38,23 +38,26 @@ namespace SquidReports.DataCollector.Plugin.BES
 
         public void CollectActions()
         {
-            try
-            {
-                List<Model.Action> actions = API.GetActions();
-            }
-            catch (Exception e)
-            {
-                Logger.LogException(e.Message, e);
-            }
+            //try
+            //{
+            //    List<Model.Action> actions = API.GetActions();
+            //}
+            //catch (Exception e)
+            //{
+            //    Logger.LogException(e.Message, e);
+            //}
             
 
             //foreach (Model.Action action in actions)
             //{
             //    DataCollected(this, new CollectorEventArgs(action));
             //}
-            IEnumerable<Model.Action> dbActions = DbRelay.Get<Model.Action>(new { ActionID = 63 });
-            dbActions = DbRelay.Get<Model.Action>();
-            DbRelay.Put<Model.Action>(dbActions.ElementAt<Model.Action>(0));
+            Model.Action action1 = new Model.Action(1, "1", "Den eerste");
+            Model.Action action2 = new Model.Action(2, "2", "Den tweede");
+            //Model.Action action3 = new Model.Action(3, "3", "Den derde");
+            DbRelay.Put<Model.Action>(action1);
+            DbRelay.Put<Model.Action>(action2);
+            //DbRelay.Put<Model.Action>(action3);
             Console.WriteLine("");
         }
     }

@@ -53,13 +53,13 @@ namespace SquidReports.DataCollector.API
 
             if (IsNew<T>(keyHash))
             {
-                InsertHash<T>(keyHash, nonKeyHash);
-                InsertData<T>(data);
+                int newID = InsertData<T>(data);
+                InsertHash<T>(keyHash, nonKeyHash, newID);
             }
             else if (IsToUpdate<T>(keyHash, nonKeyHash))
-            {
-                UpdateHash<T>(keyHash, nonKeyHash);
+            { 
                 UpdateData<T>(data);
+                UpdateHash<T>(keyHash, nonKeyHash);
             }
         }
 
@@ -121,14 +121,16 @@ namespace SquidReports.DataCollector.API
             }
         }
 
-        public void InsertData<T>(ICollectible data)
+        public int InsertData<T>(ICollectible data)
         {
             Connection.Execute(Helpers.Sql.InsertBuilder(typeof(T)), data);
+            dynamic id = Connection.Query(Helpers.Sql.SelectBuilder(typeof(T), data), data).Single();
+            return id.ID;
         }
 
-        public void InsertHash<T>(string keyHash, string nonKeyHash)
+        public void InsertHash<T>(string keyHash, string nonKeyHash, int newID)
         {
-            Connection.Execute("INSERT INTO [SQR].[DATA_HASH] (ModelID, KeyHash, NonKeyHash) VALUES (@ModelID, @KeyHash, @NonKeyHash)", new { @ModelID = GetModelID(typeof(T)), KeyHash = keyHash, NonKeyHash = nonKeyHash });
+            Connection.Execute("INSERT INTO [SQR].[DATA_HASH] (ModelID, TableID, KeyHash, NonKeyHash) VALUES (@ModelID, @TableID, @KeyHash, @NonKeyHash)", new { @ModelID = GetModelID(typeof(T)), TableID = newID, KeyHash = keyHash, NonKeyHash = nonKeyHash });
         }
 
         public void UpdateData<T>(ICollectible data)
