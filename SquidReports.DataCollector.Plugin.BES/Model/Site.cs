@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SquidReports.DataCollector.Interface;
 
 namespace SquidReports.DataCollector.Plugin.BES.Model
 {
-    public class Site
+    public class Site : ICollectible
     {
-
+        public int ID { get; set; }
     }
 }

@@ -21,7 +21,7 @@ namespace SquidReports.DataCollector.Interface
 
     }
 
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class CollectorTypeAttribute : Attribute
     {
         public CollectorType Type { get; set; }
