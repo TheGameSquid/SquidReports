@@ -57,8 +57,18 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             RestRequest request = new RestRequest("query", Method.GET);
             request.AddQueryParameter("relevance", relevance);
 
-            XDocument response = Execute(request);
+            // Prepare the XML document
+            XDocument response = new XDocument();
 
+            try
+            {
+                response = Execute(request);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            
             Console.WriteLine("");
 
             // Let's check if the Result element is empty

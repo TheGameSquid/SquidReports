@@ -47,11 +47,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CollectorEventArgs.cs" />
     <Compile Include="IDbRelay.cs" />
     <Compile Include="ICollectible.cs" />
     <Compile Include="ICollector.cs" />
-    <Compile Include="LogEventArgs.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TableAttribute.cs" />
   </ItemGroup>

@@ -10,6 +10,7 @@ namespace SquidReports.DataCollector.Interface
         SqlConnection Connection { get; set; }
         string ConnectionString { get; set; }
 
+        IEnumerable<T> Get<T>() where T : new();
         IEnumerable<T> Get<T>(object parameters) where T : new();
         void Put<T>(ICollectible data);
     }

@@ -14,26 +14,11 @@ namespace SquidReports.DataCollector
         {
             BESCollector collector = new BESCollector();
             IDbRelay dbRelay = new DbRelay(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
-            collector.Init(dbRelay);
-            collector.DataCollected += DataTest;
-            collector.MessageLogged += LogTest;
+            ILogger nLogger = new NLogger();
+            collector.Init(nLogger, dbRelay);
             collector.Execute();
 
             Console.Read();
-        }
-
-        public static void DataTest(object sender, EventArgs e)
-        {
-            CollectorEventArgs args = (CollectorEventArgs)e;
-            ICollectible data = args.Data;
-
-            Console.WriteLine("Data: {0}", data);
-        }
-
-        public static void LogTest(object sender, EventArgs e)
-        {
-            LogEventArgs args = (LogEventArgs)e;
-            Console.WriteLine(args.Message);
         }
     }
 }

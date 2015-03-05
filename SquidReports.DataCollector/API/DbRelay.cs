@@ -18,6 +18,11 @@ namespace SquidReports.DataCollector.API
         public SqlConnection Connection { get; set; }
         public string ConnectionString { get; set; }
 
+        public IEnumerable<T> Get<T>() where T : new()
+        {
+            return Connection.Query<T>(SqlBuilder(typeof(T), null));
+        }
+
         public IEnumerable<T> Get<T>(object parameters) where T : new()
         {
             return Connection.Query<T>(SqlBuilder(typeof(T), parameters), parameters);
@@ -66,7 +71,7 @@ namespace SquidReports.DataCollector.API
 
         public void Put<T>(ICollectible data)
         {
-            // TODO
+            Console.WriteLine("Collected! {0}", data.ID);
         }
     }
 }
