@@ -12,14 +12,16 @@ namespace SquidReports.DataCollector.API
 {
     public class DbRelay : IDbRelay
     {
-        public DbRelay (string connectionString)
+        public DbRelay (string connectionString, CollectorType collectorType)
         {
             this.ConnectionString = connectionString;
             this.Connection = new SqlConnection(connectionString);
+            this.CollectorType = collectorType;
         }
 
         public SqlConnection Connection { get; set; }
         public string ConnectionString { get; set; }
+        public CollectorType CollectorType { get; set; }
 
         public IEnumerable<T> Get<T>() where T : new()
         {
@@ -33,7 +35,7 @@ namespace SquidReports.DataCollector.API
 
         public void Put<T>(ICollectible data)
         {
-            Console.WriteLine(Helpers.Sql.InsertBuilder(typeof(T)));
+            Console.WriteLine(Helpers.Sql.UpdateBuilder(typeof(T)));
             // TODO: Move this to application initialization fase
             RegisterModel(typeof(T));
 
@@ -43,6 +45,12 @@ namespace SquidReports.DataCollector.API
             string keyHash = Helpers.Crypto.GetMD5HashFromObject(keyValues);
             string nonKeyHash = Helpers.Crypto.GetMD5HashFromObject(nonKeyValues);
 
+            // If the collector type is Absolute, we need to cache the data so we can delete old entries based on the ABSOLUTE list in the cache
+            if (this.CollectorType == CollectorType.Absolute)
+            {
+                CacheData<T>(keyHash, nonKeyHash);
+            }
+
             if (IsNew<T>(keyHash))
             {
                 InsertHash<T>(keyHash, nonKeyHash);
@@ -50,7 +58,8 @@ namespace SquidReports.DataCollector.API
             }
             else if (IsToUpdate<T>(keyHash, nonKeyHash))
             {
-
+                UpdateHash<T>(keyHash, nonKeyHash);
+                UpdateData<T>(data);
             }
         }
 
@@ -120,6 +129,23 @@ namespace SquidReports.DataCollector.API
         public void InsertHash<T>(string keyHash, string nonKeyHash)
         {
             Connection.Execute("INSERT INTO [SQR].[DATA_HASH] (ModelID, KeyHash, NonKeyHash) VALUES (@ModelID, @KeyHash, @NonKeyHash)", new { @ModelID = GetModelID(typeof(T)), KeyHash = keyHash, NonKeyHash = nonKeyHash });
+        }
+
+        public void UpdateData<T>(ICollectible data)
+        {
+            Connection.Execute(Helpers.Sql.UpdateBuilder(typeof(T)), data);
+        }
+
+        public void UpdateHash<T>(string keyHash, string nonKeyHash)
+        {
+            Connection.Execute("UPDATE [SQR].[DATA_HASH] SET NonKeyHash = @NonKeyHash WHERE KeyHash = @KeyHash", new { KeyHash = keyHash, NonKeyHash = nonKeyHash });
+        }
+
+        public void CacheData<T>(string keyHash, string nonKeyHash)
+        {
+            // Find the ModelID
+            int modelID = GetModelID(typeof(T));
+            Connection.Execute("INSERT INTO [SQR].[DATA_CACHE] (ModelID, KeyHash, NonKeyHash) VALUES (@ModelID, @KeyHash, @NonKeyHash)", new { @ModelID = modelID, KeyHash = keyHash, NonKeyHash = nonKeyHash });
         }
 
         public void RegisterModel(Type type)

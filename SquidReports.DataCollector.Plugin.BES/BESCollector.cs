@@ -9,6 +9,7 @@ using SquidReports.DataCollector.Plugin.BES.Model;
 
 namespace SquidReports.DataCollector.Plugin.BES
 {
+    [CollectorType(Type=CollectorType.Absolute)]
     public class BESCollector : ICollector
     {
         public IDbRelay DbRelay { get; set; }

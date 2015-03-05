@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SquidReports.DataCollector.Interface;
@@ -119,7 +120,65 @@ namespace SquidReports.DataCollector.Helpers
 
         public static string UpdateBuilder(Type type)
         {
-            throw new NotImplementedException();
+            string query = String.Empty;
+
+            // Step one, get the Table attribute to detect the Schema and Table name
+            TableAttribute[] tableAttributes = (TableAttribute[])type.GetCustomAttributes(typeof(TableAttribute), true);
+            if (tableAttributes.Length > 0)
+            {
+                query = String.Format("UPDATE [{0}].[{1}]", tableAttributes[0].Schema, tableAttributes[0].Table);
+            }
+            else
+            {
+                throw new ApplicationException(String.Format("No Schema and Table defined for Type {0}", type.Name));
+            }
+
+            // Now we need to seperate the Key properties from the Non-key properties
+            PropertyInfo[] properties = type.GetProperties();
+            // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
+            properties = properties.Where(p => p.Name != "ID").ToArray();
+            List<PropertyInfo> keyProperties = new List<PropertyInfo>();
+            List<PropertyInfo> nonKeyProperties = new List<PropertyInfo>();
+            foreach (PropertyInfo property in properties)
+            {
+                KeyAttribute[] keyAttributes = (KeyAttribute[])property.GetCustomAttributes(typeof(KeyAttribute), true);
+                // If the property is NOT decorated with the Key attribute, add it to the List
+                if (keyAttributes.Length == 0)
+                {
+                    nonKeyProperties.Add(property);
+                }
+                else
+                {
+                    keyProperties.Add(property);
+                }
+            }
+
+            // Set the values to assign
+            for (int index = 0; index < nonKeyProperties.Count; index++)
+            {
+                if (index == 0)
+                {
+                    query += String.Format(" SET {0} = @{0}", nonKeyProperties.ElementAt(index).Name);
+                }
+                else
+                {
+                    query += String.Format(", {0} = @{0}", nonKeyProperties.ElementAt(index).Name);
+                }
+            }
+            // Compose the WHERE clause for the keys
+            for (int index = 0; index < keyProperties.Count; index++)
+            {
+                if (index == 0)
+                {
+                    query += String.Format(" WHERE {0} = @{0}", keyProperties.ElementAt(index).Name);
+                }
+                else
+                {
+                    query += String.Format(" AND {0} = @{0}", keyProperties.ElementAt(index).Name);
+                }
+            }
+
+            return query;
         }
 
         public static string DeleteBuilder(Type type)

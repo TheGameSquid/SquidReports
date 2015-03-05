@@ -2,6 +2,12 @@
 
 namespace SquidReports.DataCollector.Interface
 {
+    public enum CollectorType
+    {
+        Absolute,
+        Cumulative
+    }
+
     [AttributeUsage(AttributeTargets.Class)]
     public class TableAttribute : Attribute
     {
@@ -13,5 +19,11 @@ namespace SquidReports.DataCollector.Interface
     public class KeyAttribute : Attribute
     {
 
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class CollectorTypeAttribute : Attribute
+    {
+        public CollectorType Type { get; set; }
     }
 }
