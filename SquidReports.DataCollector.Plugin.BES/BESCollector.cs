@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Reflection;
 using SquidReports.DataCollector.Interface;
 using SquidReports.DataCollector.Plugin.BES.API;
 using SquidReports.DataCollector.Plugin.BES.Model;
-using LambdaSqlBuilder;
 
 namespace SquidReports.DataCollector.Plugin.BES
 {
@@ -45,8 +45,7 @@ namespace SquidReports.DataCollector.Plugin.BES
             //{
             //    DataCollected(this, new CollectorEventArgs(action));
             //}
-
-            DbRelay.Get<Model.Action>(new SqlLam<Model.Action>(a => a.Name == "The Way Of The Future"));
+            IEnumerable<Model.Action> actions = DbRelay.Get<Model.Action>(new { ActionID = 63 });
         }
     }
 }

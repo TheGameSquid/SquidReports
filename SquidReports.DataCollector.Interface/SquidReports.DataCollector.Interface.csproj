@@ -38,11 +38,9 @@
     <OutputPath>bin\x86\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dapper">
+    <Reference Include="Dapper, Version=1.38.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Dapper.1.38\lib\net45\Dapper.dll</HintPath>
-    </Reference>
-    <Reference Include="LambdaSqlBuilder">
-      <HintPath>..\packages\LambdaSqlBuilder.0.9\lib\net40\LambdaSqlBuilder.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -59,6 +57,7 @@
     <Compile Include="ICollector.cs" />
     <Compile Include="LogEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TableAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

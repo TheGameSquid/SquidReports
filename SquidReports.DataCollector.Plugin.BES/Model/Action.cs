@@ -3,6 +3,7 @@ using SquidReports.DataCollector.Interface;
 
 namespace SquidReports.DataCollector.Plugin.BES.Model
 {
+    [Table(Schema="BESEXT", Table="ACTION")]
     public class Action : ICollectible
     {
         public Action()
