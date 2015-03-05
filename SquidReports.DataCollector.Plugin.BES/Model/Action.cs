@@ -19,6 +19,7 @@ namespace SquidReports.DataCollector.Plugin.BES.Model
         }
 
         public int ID           { get; set; }   // Identity ID assigned by DB
+        [Key]
         public int ActionID     { get; set; }   // Identity ID assigned by API
         public string SiteID    { get; set; }
         public string Name      { get; set; }

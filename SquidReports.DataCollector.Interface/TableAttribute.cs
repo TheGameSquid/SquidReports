@@ -8,4 +8,10 @@ namespace SquidReports.DataCollector.Interface
         public string Schema    { get; set; }
         public string Table     { get; set; }
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class KeyAttribute : Attribute
+    {
+
+    }
 }
