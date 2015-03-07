@@ -36,8 +36,6 @@ namespace SquidReports.DataCollector.API
         public void Put<T>(ICollectible data)
         {
             Console.WriteLine(Helpers.Sql.UpdateBuilder(typeof(T)));
-            // TODO: Move this to application initialization fase
-            RegisterModel(typeof(T));
 
             Dictionary<string, object> keyValues = GetKeyValues<T>(data);
             Dictionary<string, object> nonKeyValues = GetNonKeyValues<T>(data);

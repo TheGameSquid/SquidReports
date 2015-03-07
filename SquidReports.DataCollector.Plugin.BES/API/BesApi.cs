@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Xml.Linq;
 using SquidReports.DataCollector.Interface;
+using SquidReports.DataCollector.Plugin.BES.Model;
 using RestSharp;
 
 namespace SquidReports.DataCollector.Plugin.BES.API
@@ -14,25 +15,17 @@ namespace SquidReports.DataCollector.Plugin.BES.API
         // Fields
         private Uri baseURL;
         private HttpBasicAuthenticator authenticator;
+        private IDbRelay dbRelay;
         private ILogger logger;
 
         // Properties
-        public Uri BaseURL
-        {
-            get { return this.baseURL; }
-            private set { this.baseURL = value; }
-        }
-
-        public HttpBasicAuthenticator Authenticator
-        {
-            get { return this.authenticator; }
-            private set { this.authenticator = value; }
-        }
-
+        public Uri BaseURL { get; set; }
+        public HttpBasicAuthenticator Authenticator { get; set; }
+        public IDbRelay DbRelay { get; set; }
         public ILogger Logger { get; set; }
 
         // Constructors
-        public BesApi(ILogManager logManager, string aBaseURL, string aUsername, string aPassword)
+        public BesApi(ILogManager logManager, IDbRelay dbRelay, string aBaseURL, string aUsername, string aPassword)
         {
             // Use to ignore SSL errors if specified in App.config
             if (AppSettings.Get<bool>("IgnoreSSL"))
@@ -43,6 +36,7 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             this.BaseURL = new Uri(aBaseURL);
             this.Authenticator = new HttpBasicAuthenticator(aUsername, aPassword);
             ILogger logger = logManager.GetCurrentClassLogger();
+            this.DbRelay = dbRelay;
             this.Logger = logger;
         }
 
@@ -91,21 +85,57 @@ namespace SquidReports.DataCollector.Plugin.BES.API
                         XElement valueElement = tupleElement.Elements("Answer").Last();
 
                         // Resolve Site Name to Site ID
-                        // TODO: Site dbSite = DB.Connection.Query<Site>("SELECT * FROM BESEXT.SITE WHERE @Name = Name", new { Name = siteElement.Value }).Single();
+                        //Site dbSite = DB.Connection.Query<Site>("SELECT * FROM BESEXT.SITE WHERE @Name = Name", new { Name = siteElement.Value }).Single();
+                        Site dbSite = DbRelay.Get<Site>(new { Name = siteElement.Value }).Single();
 
                         // Add the new action
-                        actions.Add(new Model.Action(Convert.ToInt32(actionIDElement.Value), siteElement.Value, valueElement.Value));
+                        actions.Add(new Model.Action(Convert.ToInt32(actionIDElement.Value), dbSite.ID, valueElement.Value));
                     }
                 }
             }
             catch (Exception e)
             {
                 this.Logger.LogException(LogLevel.Error, e.Message, e);
+                //throw;
             }
 
-            
-
             return actions;
+        }
+
+        public List<Site> GetSites()
+        {
+            List<Site> sites = new List<Site>();
+
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            RestRequest request = new RestRequest("sites", Method.GET);
+
+            try
+            {
+                // Execute the request
+                XDocument response = Execute(request);
+
+                foreach (XElement siteElement in response.Element("BESAPI").Elements())
+                {
+                    if (siteElement.Name.ToString() == "ActionSite")
+                    {
+                        sites.Add(new Site(siteElement.Element("Name").Value.ToString(), "master"));
+                    }
+                    else
+                    {
+                        sites.Add(new Site(siteElement.Element("Name").Value.ToString(), siteElement.Name.ToString().Replace("Site", "").ToLower()));
+                    }
+
+                }
+            }
+            catch(Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+                //throw;
+            }
+            
+            return sites;
         }
 
         public XDocument Execute(RestRequest request)
@@ -127,9 +157,8 @@ namespace SquidReports.DataCollector.Plugin.BES.API
                 // Return non-deserialized XML document
                 return XDocument.Parse(response.Content, LoadOptions.None);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                this.Logger.LogException(LogLevel.Error, ex.Message, ex);
                 throw;
             }
         }
@@ -149,9 +178,9 @@ namespace SquidReports.DataCollector.Plugin.BES.API
                     throw new Exception(response.ErrorMessage);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine("Error encountered: {0}", ex.Message);
+                throw;
             }
 
             return response.Data;

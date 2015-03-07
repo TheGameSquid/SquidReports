@@ -54,10 +54,22 @@ namespace SquidReports.DataCollector.Helpers
             {
                 // Let's look at the properties of the anonymous object
                 PropertyInfo[] properties = parameters.GetType().GetProperties();
+                if (properties.Length == 0)
+                {
+                    throw new ApplicationException(String.Format("Not a single property was defined for Type {0}", type.Name));
+                }
 
-                // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
-                properties = properties.Where(p => p.Name != "ID").ToArray();
-
+                // Let's check if ID is the ONLY key Column
+                if ((properties.Length == 1) && (properties[0].Name == "ID"))
+                {
+                    // Leave the ID column as it is
+                }
+                else
+                {
+                    // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
+                    properties = properties.Where(p => p.Name != "ID").ToArray();
+                }
+                
                 for (int index = 0; index < properties.Length; index++)
                 {
                     Console.WriteLine(properties[index].Name);
@@ -97,8 +109,21 @@ namespace SquidReports.DataCollector.Helpers
             // Let's look at the properties of the Type
             PropertyInfo[] properties = type.GetProperties();
 
-            // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
-            properties = properties.Where(p => p.Name != "ID").ToArray();
+            if (properties.Length == 0)
+            {
+                throw new ApplicationException(String.Format("Not a single property was defined for Type {0}", type.Name));
+            }
+
+            // Let's check if ID is the ONLY Column
+            if ((properties.Length == 1) && (properties[0].Name == "ID"))
+            {
+                // Leave the ID column as it is
+            }
+            else
+            {
+                // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
+                properties = properties.Where(p => p.Name != "ID").ToArray();
+            }
 
             string propertyString = String.Empty;
             string valuesString = String.Empty;
@@ -139,10 +164,14 @@ namespace SquidReports.DataCollector.Helpers
 
             // Now we need to seperate the Key properties from the Non-key properties
             PropertyInfo[] properties = type.GetProperties();
-            // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
-            properties = properties.Where(p => p.Name != "ID").ToArray();
+            if (properties.Length == 0)
+            {
+                throw new ApplicationException(String.Format("Not a single property was defined for Type {0}", type.Name));
+            }
+
             List<PropertyInfo> keyProperties = new List<PropertyInfo>();
             List<PropertyInfo> nonKeyProperties = new List<PropertyInfo>();
+
             foreach (PropertyInfo property in properties)
             {
                 KeyAttribute[] keyAttributes = (KeyAttribute[])property.GetCustomAttributes(typeof(KeyAttribute), true);
@@ -155,6 +184,23 @@ namespace SquidReports.DataCollector.Helpers
                 {
                     keyProperties.Add(property);
                 }
+            }
+
+            // Check if there were any Key properties
+            if (keyProperties.Count == 0)
+            {
+                throw new ApplicationException(String.Format("Not a single Key property was defined for Type {0}", type.Name));
+            }
+
+            // Let's check if ID is the ONLY key Column
+            if ((keyProperties.Count == 1) && (keyProperties.ElementAt(0).Name == "ID"))
+            {
+                // Leave the ID column as it is
+            }
+            else
+            {
+                // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
+                keyProperties = keyProperties.Where(p => p.Name != "ID").ToList();
             }
 
             // Set the values to assign
@@ -202,19 +248,55 @@ namespace SquidReports.DataCollector.Helpers
 
             // Now we need to seperate the Key properties from the Non-key properties
             PropertyInfo[] properties = type.GetProperties();
-            // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
-            properties = properties.Where(p => p.Name != "ID").ToArray();
-
-            // Compose the WHERE clause for the keys
-            for (int index = 0; index < properties.Length; index++)
+            if (properties.Length == 0)
             {
-                if (index == 0)
+                throw new ApplicationException(String.Format("Not a single property was defined for Type {0}", type.Name));
+            }
+
+            List<PropertyInfo> keyProperties = new List<PropertyInfo>();
+            List<PropertyInfo> nonKeyProperties = new List<PropertyInfo>();
+
+            foreach (PropertyInfo property in properties)
+            {
+                KeyAttribute[] keyAttributes = (KeyAttribute[])property.GetCustomAttributes(typeof(KeyAttribute), true);
+                // If the property is NOT decorated with the Key attribute, add it to the List
+                if (keyAttributes.Length == 0)
                 {
-                    query += String.Format(" WHERE {0} = @{0}", properties.ElementAt(index).Name);
+                    nonKeyProperties.Add(property);
                 }
                 else
                 {
-                    query += String.Format(" AND {0} = @{0}", properties.ElementAt(index).Name);
+                    keyProperties.Add(property);
+                }
+            }
+
+            // Check if there were any Key properties
+            if (keyProperties.Count == 0)
+            {
+                throw new ApplicationException(String.Format("Not a single Key property was defined for Type {0}", type.Name));
+            }
+
+            // Let's check if ID is the ONLY key Column
+            if ((keyProperties.Count == 1) && (keyProperties.ElementAt(0).Name == "ID"))
+            {
+                // Leave the ID column as it is
+            }
+            else
+            {
+                // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
+                keyProperties = keyProperties.Where(p => p.Name != "ID").ToList();
+            }
+
+            // Compose the WHERE clause for the keys
+            for (int index = 0; index < keyProperties.Count; index++)
+            {
+                if (index == 0)
+                {
+                    query += String.Format(" WHERE {0} = @{0}", keyProperties.ElementAt(index).Name);
+                }
+                else
+                {
+                    query += String.Format(" AND {0} = @{0}", keyProperties.ElementAt(index).Name);
                 }
             }
 

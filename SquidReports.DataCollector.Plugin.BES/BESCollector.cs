@@ -15,7 +15,6 @@ namespace SquidReports.DataCollector.Plugin.BES
         public IDbRelay DbRelay { get; set; }
         public ILogManager LogManager { get; set; }
         public ILogger Logger { get; set; }
-
         public BesApi API { get; set; }
 
         public void Init(ILogManager logManager, IDbRelay dbRelay)
@@ -25,6 +24,7 @@ namespace SquidReports.DataCollector.Plugin.BES
 
             this.API = new BesApi(
                                     logManager,
+                                    dbRelay,
                                     appConfig.AppSettings.Settings["ApiEndpoint"].Value,
                                     appConfig.AppSettings.Settings["ApiUser"].Value,
                                     appConfig.AppSettings.Settings["ApiPassword"].Value
@@ -36,27 +36,44 @@ namespace SquidReports.DataCollector.Plugin.BES
 
         public void Execute()
         {
+            CollectSites();
             CollectActions();
         }
 
         public void CollectActions()
         {
-            List<Model.Action> actions = API.GetActions();
-            
+            try
+            {
+                List<Model.Action> actions = API.GetActions();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} Actions!", actions.Count));
 
-            //foreach (Model.Action action in actions)
-            //{
-            //    DataCollected(this, new CollectorEventArgs(action));
-            //}
-            this.Logger.LogMessage(LogLevel.Debug, "Hello World from SquirReports!");
+                foreach (Model.Action action in actions)
+                {
+                    DbRelay.Put<Model.Action>(action);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
 
-            Model.Action action1 = new Model.Action(1, "1", "Den eerste");
-            Model.Action action2 = new Model.Action(2, "2", "Den tweede");
-            //Model.Action action3 = new Model.Action(3, "3", "Den derde");
-            DbRelay.Put<Model.Action>(action1);
-            DbRelay.Put<Model.Action>(action2);
-            //DbRelay.Put<Model.Action>(action3);
-            Console.WriteLine("");
+        public void CollectSites()
+        {
+            try
+            {
+                List<Site> sites = API.GetSites();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} Sites!", sites.Count));
+
+                foreach (Site site in sites)
+                {
+                    DbRelay.Put<Site>(site);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
         }
     }
 }
