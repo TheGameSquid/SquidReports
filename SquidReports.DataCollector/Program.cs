@@ -39,7 +39,15 @@ namespace SquidReports.DataCollector
                 if (!connection.Query("SELECT * FROM [SQR].[DATA_MODEL] WHERE ModelName = @ModelName AND AssemblyName = @AssemblyName", new { ModelName = type.Name, AssemblyName = type.Assembly.GetName().Name }).Any())
                 {
                     // It's not there yet, register in in the [SQR].[DATA_MODEL] table
-                    connection.Execute("INSERT INTO [SQR].[DATA_MODEL] (ModelName, AssemblyName) VALUES (@ModelName, @AssemblyName)", new { ModelName = type.Name, AssemblyName = type.Assembly.GetName().Name });
+                    connection.Execute("INSERT INTO [SQR].[DATA_MODEL] (ModelName, ModelNameFull, AssemblyName, AssemblyNameFull, NameSpace) VALUES (@ModelName, @ModelNameFull, @AssemblyName, @AssemblyNameFull, @NameSpace)", 
+                                                                        new 
+                                                                        { 
+                                                                            ModelName = type.Name,
+                                                                            ModelNameFull = String.Format("{0}.{1}", type.Namespace, type.Name),
+                                                                            AssemblyName = type.Assembly.GetName().Name, 
+                                                                            AssemblyNameFull = type.Assembly.FullName, 
+                                                                            type.Namespace 
+                                                                        });
                 }
             }
         }
@@ -111,8 +119,13 @@ namespace SquidReports.DataCollector
                             // Therefore, it has become invalid. Let's delete it from the HashTable
                             connection.Execute("DELETE FROM [SQR].[DATA_HASH] WHERE ModelID = @ModelID AND KeyHash = @KeyHash", new { ModelID = ID, KeyHash = tableKey });
 
-                            // Also, delete the date in the actual persistent table
-                            connection.Execute(Helpers.Sql.DeleteBuilder(collector.GetType(), tableID));
+                            // Next up, we need to delete from the actual persistent table, so we need to find out what Model this is
+                            // For that, we use the ModelID and the [SQR].[DATA_MODEL] table
+                            dynamic modelInfo = connection.Query("SELECT * FROM [SQR].[DATA_MODEL] WHERE ID = @ModelID", new { ModelID = ID }).Single();
+                            // Spawn an instance of the model type
+                            object modelObject = Activator.CreateInstance((string)modelInfo.AssemblyName, (string)modelInfo.ModelNameFull).Unwrap();
+                            // Delete based on the Model Type
+                            connection.Execute(Helpers.Sql.DeleteBuilder(modelObject.GetType(), tableID));
                         }
                     }
                     
