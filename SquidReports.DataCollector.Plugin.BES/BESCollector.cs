@@ -13,11 +13,12 @@ namespace SquidReports.DataCollector.Plugin.BES
     public class BESCollector : ICollector
     {
         public IDbRelay DbRelay { get; set; }
+        public ILogManager LogManager { get; set; }
         public ILogger Logger { get; set; }
 
         public BesApi API { get; set; }
 
-        public void Init(ILogger logger, IDbRelay dbRelay)
+        public void Init(ILogManager logManager, IDbRelay dbRelay)
         {
             // Let's make sure to explicitly call the .dll.config file
             Configuration appConfig = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
@@ -27,7 +28,8 @@ namespace SquidReports.DataCollector.Plugin.BES
                                     appConfig.AppSettings.Settings["ApiUser"].Value,
                                     appConfig.AppSettings.Settings["ApiPassword"].Value
                                 );
-            this.Logger = logger;
+            this.LogManager = logManager;
+            this.Logger = this.LogManager.GetCurrentClassLogger();
             this.DbRelay = dbRelay;
         }
 
@@ -52,6 +54,8 @@ namespace SquidReports.DataCollector.Plugin.BES
             //{
             //    DataCollected(this, new CollectorEventArgs(action));
             //}
+            this.Logger.LogMessage(LogLevel.Debug, "Hello World from SquirReports!");
+
             Model.Action action1 = new Model.Action(1, "1", "Den eerste");
             Model.Action action2 = new Model.Action(2, "2", "Den tweede");
             //Model.Action action3 = new Model.Action(3, "3", "Den derde");

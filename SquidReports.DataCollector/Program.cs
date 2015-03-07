@@ -67,12 +67,14 @@ namespace SquidReports.DataCollector
             }
 
             // Let's create a logger object
-            ILogger nLogger = new NLogger();
+            NLogManager nLogManager = new NLogManager();
+            ILogger nLogger = nLogManager.GetCurrentClassLogger();
+            nLogger.LogMessage(LogLevel.Debug, "Hello World");
 
             // ... And a DbRelay, while specifying the CollectorType
             IDbRelay dbRelay = new DbRelay(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, type);
 
-            collector.Init(nLogger, dbRelay);
+            collector.Init(nLogManager, dbRelay);
         }
 
         private static void CollectorExecute(ICollector collector)

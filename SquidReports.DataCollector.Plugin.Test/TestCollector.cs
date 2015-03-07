@@ -6,9 +6,9 @@ namespace SquidReports.DataCollector.Plugin.Test
     public class TestCollector : ICollector
     {
         public IDbRelay DbRelay { get; set; }
-        public ILogger Logger { get; set; }
+        public ILogManager LogManager { get; set; }
 
-        public void Init(ILogger logger, IDbRelay dbRelay)
+        public void Init(ILogManager logManager, IDbRelay dbRelay)
         {
             
         }

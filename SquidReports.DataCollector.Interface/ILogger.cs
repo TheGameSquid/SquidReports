@@ -16,7 +16,7 @@ namespace SquidReports.DataCollector.Interface
 
     public interface ILogger
     {
-        void LogMessage(string message, LogLevel logLevel);
-        void LogException(string message, Exception e);
+        void LogMessage(LogLevel logLevel, string message);
+        void LogException(LogLevel logLevel, string message, Exception e);
     }
 }

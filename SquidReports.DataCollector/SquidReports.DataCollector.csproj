@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="API\DbRelay.cs" />
     <Compile Include="API\NLogger.cs" />
+    <Compile Include="API\NLogManager.cs" />
     <Compile Include="Helpers\Crypto.cs" />
     <Compile Include="Helpers\Sql.cs" />
     <Compile Include="Program.cs" />

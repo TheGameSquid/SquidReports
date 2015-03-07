@@ -5,9 +5,9 @@ namespace SquidReports.DataCollector.Interface
     public interface ICollector
     {
         IDbRelay DbRelay { get; set; }
-        ILogger Logger { get; set; }
+        ILogManager LogManager { get; set; }
 
-        void Init(ILogger logger, IDbRelay dbRelay);
+        void Init(ILogManager logManager, IDbRelay dbRelay);
         void Execute();
     }
 }
