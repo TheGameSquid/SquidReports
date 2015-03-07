@@ -65,6 +65,15 @@
     <Compile Include="AppSettings.cs" />
     <Compile Include="BESCollector.cs" />
     <Compile Include="Model\Action.cs" />
+    <Compile Include="Model\ActionDetail.cs" />
+    <Compile Include="Model\ActionResult.cs" />
+    <Compile Include="Model\Analysis.cs" />
+    <Compile Include="Model\AnalysisProperty.cs" />
+    <Compile Include="Model\Baseline.cs" />
+    <Compile Include="Model\BaselineResult.cs" />
+    <Compile Include="Model\Computer.cs" />
+    <Compile Include="Model\ComputerGroup.cs" />
+    <Compile Include="Model\ComputerGroupMember.cs" />
     <Compile Include="Model\Site.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

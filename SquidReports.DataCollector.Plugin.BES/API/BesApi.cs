@@ -96,10 +96,43 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             catch (Exception e)
             {
                 this.Logger.LogException(LogLevel.Error, e.Message, e);
-                //throw;
             }
 
             return actions;
+        }
+
+        public List<Computer> GetComputers()
+        {
+            this.Logger.LogMessage(LogLevel.Info, "Starting GetComputers()");
+
+            List<Computer> computers = new List<Computer>();
+
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            RestRequest request = new RestRequest("computers", Method.GET);
+            
+            try
+            {
+                computers.AddRange(Execute<List<Computer>>(request));
+
+                foreach (Computer computer in computers)
+                {
+                    request = new RestRequest("computer/{id}", Method.GET);
+                    request.AddUrlSegment("id", computer.ComputerID.ToString());
+
+                    XDocument response = Execute(request);
+                    string hostName = response.Element("BESAPI").Element("Computer").Elements("Property")
+                        .Where(e => e.Attribute("Name").Value.ToString() == "Computer Name").Single().Value.ToString();
+                    computer.ComputerName = hostName;
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+
+            return computers;
         }
 
         public List<Site> GetSites()
@@ -132,7 +165,6 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             catch(Exception e)
             {
                 this.Logger.LogException(LogLevel.Error, e.Message, e);
-                //throw;
             }
             
             return sites;

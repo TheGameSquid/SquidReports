@@ -72,8 +72,6 @@ namespace SquidReports.DataCollector.Helpers
                 
                 for (int index = 0; index < properties.Length; index++)
                 {
-                    Console.WriteLine(properties[index].Name);
-
                     // Add the first WHERE
                     if (index == 0)
                     {

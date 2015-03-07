@@ -37,6 +37,7 @@ namespace SquidReports.DataCollector.Plugin.BES
         public void Execute()
         {
             CollectSites();
+            CollectComputers();
             CollectActions();
         }
 
@@ -50,6 +51,24 @@ namespace SquidReports.DataCollector.Plugin.BES
                 foreach (Model.Action action in actions)
                 {
                     DbRelay.Put<Model.Action>(action);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectComputers()
+        {
+            try
+            {
+                List<Computer> computers = API.GetComputers();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} Computers!", computers.Count));
+
+                foreach (Computer computer in computers)
+                {
+                    DbRelay.Put<Computer>(computer);
                 }
             }
             catch (Exception e)

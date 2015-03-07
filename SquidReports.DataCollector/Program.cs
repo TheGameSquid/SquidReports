@@ -34,7 +34,6 @@ namespace SquidReports.DataCollector
 
             foreach (Type type in types)
             {
-                Console.WriteLine(type.Name);
                 // Check if the data model has been registered
                 if (!connection.Query("SELECT * FROM [SQR].[DATA_MODEL] WHERE ModelName = @ModelName AND AssemblyName = @AssemblyName", new { ModelName = type.Name, AssemblyName = type.Assembly.GetName().Name }).Any())
                 {
@@ -69,7 +68,6 @@ namespace SquidReports.DataCollector
             // Let's create a logger object
             NLogManager nLogManager = new NLogManager();
             ILogger nLogger = nLogManager.GetCurrentClassLogger();
-            nLogger.LogMessage(LogLevel.Debug, "Hello World");
 
             // ... And a DbRelay, while specifying the CollectorType
             IDbRelay dbRelay = new DbRelay(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, type);
