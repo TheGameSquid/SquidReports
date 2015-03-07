@@ -2,7 +2,7 @@
 using SquidReports.DataCollector.Interface;
 using NLog;
 
-namespace SquidReports.DataCollector.API
+namespace SquidReports.DataCollector
 {
     public class NLogger : ILogger
     {

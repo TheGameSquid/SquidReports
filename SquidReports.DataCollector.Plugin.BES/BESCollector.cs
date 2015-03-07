@@ -24,6 +24,7 @@ namespace SquidReports.DataCollector.Plugin.BES
             Configuration appConfig = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
 
             this.API = new BesApi(
+                                    logManager,
                                     appConfig.AppSettings.Settings["ApiEndpoint"].Value,
                                     appConfig.AppSettings.Settings["ApiUser"].Value,
                                     appConfig.AppSettings.Settings["ApiPassword"].Value
@@ -40,14 +41,7 @@ namespace SquidReports.DataCollector.Plugin.BES
 
         public void CollectActions()
         {
-            //try
-            //{
-            //    List<Model.Action> actions = API.GetActions();
-            //}
-            //catch (Exception e)
-            //{
-            //    Logger.LogException(e.Message, e);
-            //}
+            List<Model.Action> actions = API.GetActions();
             
 
             //foreach (Model.Action action in actions)

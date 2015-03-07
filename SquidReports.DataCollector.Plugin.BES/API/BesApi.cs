@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Xml.Linq;
+using SquidReports.DataCollector.Interface;
 using RestSharp;
 
 namespace SquidReports.DataCollector.Plugin.BES.API
@@ -13,6 +14,7 @@ namespace SquidReports.DataCollector.Plugin.BES.API
         // Fields
         private Uri baseURL;
         private HttpBasicAuthenticator authenticator;
+        private ILogger logger;
 
         // Properties
         public Uri BaseURL
@@ -27,8 +29,10 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             private set { this.authenticator = value; }
         }
 
+        public ILogger Logger { get; set; }
+
         // Constructors
-        public BesApi(string aBaseURL, string aUsername, string aPassword)
+        public BesApi(ILogManager logManager, string aBaseURL, string aUsername, string aPassword)
         {
             // Use to ignore SSL errors if specified in App.config
             if (AppSettings.Get<bool>("IgnoreSSL"))
@@ -37,13 +41,17 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             }
 
             this.BaseURL = new Uri(aBaseURL);
-            this.authenticator = new HttpBasicAuthenticator(aUsername, aPassword);
+            this.Authenticator = new HttpBasicAuthenticator(aUsername, aPassword);
+            ILogger logger = logManager.GetCurrentClassLogger();
+            this.Logger = logger;
         }
 
 
         // Methods
         public List<Model.Action> GetActions()
         {
+            this.Logger.LogMessage(LogLevel.Info, "Starting GetActions()");
+
             RestClient client = new RestClient(this.BaseURL);
             client.Authenticator = this.Authenticator;
 
@@ -62,39 +70,40 @@ namespace SquidReports.DataCollector.Plugin.BES.API
 
             try
             {
+                // Execute the request we built
                 response = Execute(request);
+
+                // Let's check if the Result element is empty
+                if (response.Element("BESAPI").Element("Query").Element("Result").Elements().Count() > 0)
+                {
+                    // We'll need to fetch the list of Sites from the DB in order to retrieve the SiteID
+                    // TODO: BesDb DB = new BesDb(ConfigurationManager.ConnectionStrings["DB"].ToString());
+
+                    // All answers are wrapped inside a "Tuple" element
+                    foreach (XElement tupleElement in response.Element("BESAPI").Element("Query").Element("Result").Elements("Tuple"))
+                    {
+                        // The Result consists of three parts:
+                        //  1) The Site Name
+                        //  2) The ActionID
+                        //  3) The Action Name
+                        XElement siteElement = tupleElement.Elements("Answer").First();
+                        XElement actionIDElement = tupleElement.Elements("Answer").ElementAt(1);
+                        XElement valueElement = tupleElement.Elements("Answer").Last();
+
+                        // Resolve Site Name to Site ID
+                        // TODO: Site dbSite = DB.Connection.Query<Site>("SELECT * FROM BESEXT.SITE WHERE @Name = Name", new { Name = siteElement.Value }).Single();
+
+                        // Add the new action
+                        actions.Add(new Model.Action(Convert.ToInt32(actionIDElement.Value), siteElement.Value, valueElement.Value));
+                    }
+                }
             }
             catch (Exception e)
             {
-                throw e;
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
             }
+
             
-            Console.WriteLine("");
-
-            // Let's check if the Result element is empty
-            if (response.Element("BESAPI").Element("Query").Element("Result").Elements().Count() > 0)
-            {
-                // We'll need to fetch the list of Sites from the DB in order to retrieve the SiteID
-                // TODO: BesDb DB = new BesDb(ConfigurationManager.ConnectionStrings["DB"].ToString());
-
-                // All answers are wrapped inside a "Tuple" element
-                foreach (XElement tupleElement in response.Element("BESAPI").Element("Query").Element("Result").Elements("Tuple"))
-                {
-                    // The Result consists of three parts:
-                    //  1) The Site Name
-                    //  2) The ActionID
-                    //  3) The Action Name
-                    XElement siteElement = tupleElement.Elements("Answer").First();
-                    XElement actionIDElement = tupleElement.Elements("Answer").ElementAt(1);
-                    XElement valueElement = tupleElement.Elements("Answer").Last();
-
-                    // Resolve Site Name to Site ID
-                    // TODO: Site dbSite = DB.Connection.Query<Site>("SELECT * FROM BESEXT.SITE WHERE @Name = Name", new { Name = siteElement.Value }).Single();
-
-                    // Add the new action
-                    actions.Add(new Model.Action(Convert.ToInt32(actionIDElement.Value), siteElement.Value, valueElement.Value));
-                }
-            }
 
             return actions;
         }
@@ -120,8 +129,8 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error encountered: {0}", ex.Message);
-                return null;
+                this.Logger.LogException(LogLevel.Error, ex.Message, ex);
+                throw;
             }
         }
 

@@ -4,7 +4,7 @@ using System.Reflection;
 using SquidReports.DataCollector.Interface;
 using NLog;
 
-namespace SquidReports.DataCollector.API
+namespace SquidReports.DataCollector
 {
     public class NLogManager : ILogManager
     {

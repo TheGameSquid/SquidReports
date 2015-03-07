@@ -63,7 +63,7 @@ namespace SquidReports.DataCollector
             }
             else
             {
-                throw new ApplicationException(String.Format("No CollectorType defined for ICollector: ", collector.GetType().Name));
+                throw new ApplicationException(String.Format("No CollectorType defined for ICollector: {0}", collector.GetType().Name));
             }
 
             // Let's create a logger object
@@ -93,7 +93,7 @@ namespace SquidReports.DataCollector
             }
             else
             {
-                throw new ApplicationException(String.Format("No CollectorType defined for ICollector: ", collector.GetType().Name));
+                throw new ApplicationException(String.Format("No CollectorType defined for ICollector: {0}", collector.GetType().Name));
             }
 
             if (type == CollectorType.Absolute)
