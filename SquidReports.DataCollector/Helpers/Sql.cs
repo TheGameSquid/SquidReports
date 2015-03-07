@@ -193,13 +193,16 @@ namespace SquidReports.DataCollector.Helpers
             // Let's check if ID is the ONLY key Column
             if ((keyProperties.Count == 1) && (keyProperties.ElementAt(0).Name == "ID"))
             {
-                // Leave the ID column as it is
+                // Leave the ID column as it is, but filter out ID as 
+                nonKeyProperties = nonKeyProperties.Where(p => p.Name != "ID").ToList();
             }
             else
             {
                 // Let's filter out the ID column, it is part of ICollectible, and is an IDENTITY column
-                keyProperties = keyProperties.Where(p => p.Name != "ID").ToList();
+                keyProperties = keyProperties.Where(p => p.Name != "ID").ToList();          
             }
+
+            nonKeyProperties = nonKeyProperties.Where(p => p.Name != "ID").ToList();
 
             // Set the values to assign
             for (int index = 0; index < nonKeyProperties.Count; index++)

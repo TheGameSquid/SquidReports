@@ -3,7 +3,7 @@ using SquidReports.DataCollector.Interface;
 
 namespace SquidReports.DataCollector.Plugin.BES.Model
 {
-    [Table(Schema = "BESEXT", Table = "BASELINE")]
+    [Table(Schema = "BESEXT", Table = "BASELINE_RESULT")]
     public class BaselineResult : ICollectible
     {
         public BaselineResult()

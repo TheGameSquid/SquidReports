@@ -20,8 +20,9 @@ namespace SquidReports.DataCollector.Plugin.BES.Model
         }
 
         public int ID               { get; set; }   // Identity ID assigned by DB
+        [Key]
         public int AnalysisID       { get; set; }   // Parent Analysis API ID
-        [DeserializeAs(Name = "ID")]
+        [DeserializeAs(Name = "ID"), Key]
         public int SequenceNo       { get; set; }   // This the N-th property of the analysis
         public string Name          { get; set; }
     }

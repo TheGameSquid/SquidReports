@@ -39,6 +39,10 @@ namespace SquidReports.DataCollector.Plugin.BES
             CollectSites();
             CollectComputers();
             CollectActions();
+            CollectComputerGroups();
+            CollectComputerGroupMembers();
+            CollectBaselines();
+            CollectBaselineResults();
         }
 
         public void CollectActions()
@@ -59,6 +63,42 @@ namespace SquidReports.DataCollector.Plugin.BES
             }
         }
 
+        public void CollectBaselines()
+        {
+            try
+            {
+                List<Baseline> baselines = API.GetBaselines();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} Baselines!", baselines.Count));
+
+                foreach (Baseline baseline in baselines)
+                {
+                    DbRelay.Put<Baseline>(baseline);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectBaselineResults()
+        {
+            try
+            {
+                List<BaselineResult> baselineResults = API.GetBaselineResults();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} BaselineResults!", baselineResults.Count));
+
+                foreach (BaselineResult baselineResult in baselineResults)
+                {
+                    DbRelay.Put<BaselineResult>(baselineResult);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
         public void CollectComputers()
         {
             try
@@ -69,6 +109,42 @@ namespace SquidReports.DataCollector.Plugin.BES
                 foreach (Computer computer in computers)
                 {
                     DbRelay.Put<Computer>(computer);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectComputerGroups()
+        {
+            try
+            {
+                List<ComputerGroup> groups = API.GetComputerGroups();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} ComputerGroups!", groups.Count));
+
+                foreach (ComputerGroup group in groups)
+                {
+                    DbRelay.Put<ComputerGroup>(group);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectComputerGroupMembers()
+        {
+            try
+            {
+                List<ComputerGroupMember> groupMembers = API.GetGroupMembers();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} ComputerGroupMembers!", groupMembers.Count));
+
+                foreach (ComputerGroupMember groupMember in groupMembers)
+                {
+                    DbRelay.Put<ComputerGroupMember>(groupMember);
                 }
             }
             catch (Exception e)
