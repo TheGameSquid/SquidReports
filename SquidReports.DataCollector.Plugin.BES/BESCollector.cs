@@ -38,11 +38,13 @@ namespace SquidReports.DataCollector.Plugin.BES
         {
             CollectSites();
             CollectComputers();
-            CollectActions();
             CollectComputerGroups();
             CollectComputerGroupMembers();
             CollectBaselines();
             CollectBaselineResults();
+            CollectActions();
+            CollectActionDetails();
+            CollectActionResults();
         }
 
         public void CollectActions()
@@ -55,6 +57,42 @@ namespace SquidReports.DataCollector.Plugin.BES
                 foreach (Model.Action action in actions)
                 {
                     DbRelay.Put<Model.Action>(action);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectActionDetails()
+        {
+            try
+            {
+                List<ActionDetail> actionDetails = API.GetActionDetails();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} ActionDetails!", actionDetails.Count));
+
+                foreach (ActionDetail actionDetail in actionDetails)
+                {
+                    DbRelay.Put<ActionDetail>(actionDetail);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectActionResults()
+        {
+            try
+            {
+                List<ActionResult> actionResults = API.GetActionResults();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} ActionResults!", actionResults.Count));
+
+                foreach (ActionResult actionResult in actionResults)
+                {
+                    DbRelay.Put<ActionResult>(actionResult);
                 }
             }
             catch (Exception e)

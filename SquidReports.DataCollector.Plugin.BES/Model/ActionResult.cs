@@ -4,7 +4,7 @@ using SquidReports.DataCollector.Interface;
 namespace SquidReports.DataCollector.Plugin.BES.Model
 {
     [Table(Schema = "BESEXT", Table = "ACTION_RESULT")]
-    public class ActionResult
+    public class ActionResult : ICollectible
     {
         public ActionResult()
         {

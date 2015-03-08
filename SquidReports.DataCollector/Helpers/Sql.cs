@@ -75,12 +75,26 @@ namespace SquidReports.DataCollector.Helpers
                     // Add the first WHERE
                     if (index == 0)
                     {
-                        query += String.Format(" WHERE {0} = @{0}", properties[index].Name);
+                        if (parameters.GetType().GetProperty(properties[index].Name).GetValue(parameters, null) == null)
+                        {
+                            query += String.Format(" WHERE {0} IS NULL", properties[index].Name);
+                        }
+                        else
+                        {
+                            query += String.Format(" WHERE {0} = @{0}", properties[index].Name);
+                        }
                     }
                     // Add an AND
                     else
                     {
-                        query += String.Format(" AND {0} = @{0}", properties[index].Name);
+                        if (parameters.GetType().GetProperty(properties[index].Name).GetValue(parameters, null) == null)
+                        {
+                            query += String.Format(" AND {0} IS NULL", properties[index].Name);
+                        }
+                        else
+                        {
+                            query += String.Format(" AND {0} = @{0}", properties[index].Name);
+                        }
                     }
                 }
             }
@@ -142,7 +156,8 @@ namespace SquidReports.DataCollector.Helpers
                 }
             }
 
-            return String.Format("{0} ({1}) VALUES ({2})", query, propertyString, valuesString);
+            query = String.Format("{0} ({1}) VALUES ({2})", query, propertyString, valuesString);
+            return query;
         }
 
         public static string UpdateBuilder(Type type)

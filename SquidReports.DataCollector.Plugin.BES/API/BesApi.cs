@@ -101,6 +101,114 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             return actions;
         }
 
+        public List<ActionDetail> GetActionDetails()
+        {
+            this.Logger.LogMessage(LogLevel.Info, "Starting GetActionDetails()");
+
+            IEnumerable<Model.Action> actions = DbRelay.Get<Model.Action>();
+            List<ActionDetail> details = new List<ActionDetail>();
+
+            foreach (Model.Action action in actions)
+            {
+                details.Add(GetActionDetails(action));
+            }
+
+            return details;
+        }
+
+        public ActionDetail GetActionDetails(Model.Action action)
+        {
+            ActionDetail detail = new ActionDetail();
+
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            RestRequest request = new RestRequest("action/{id}/status", Method.GET);
+            request.AddUrlSegment("id", action.ActionID.ToString());
+
+            try
+            {
+                // Execute the request
+                XDocument response = Execute(request);
+
+                detail = new ActionDetail(
+                                Int32.Parse(response.Element("BESAPI").Element("ActionResults").Element("ActionID").Value.ToString()),
+                                response.Element("BESAPI").Element("ActionResults").Element("Status").Value.ToString(),
+                                response.Element("BESAPI").Element("ActionResults").Element("DateIssued").Value.ToString());
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+
+            return detail;
+        }
+
+        public List<ActionResult> GetActionResults()
+        {
+            this.Logger.LogMessage(LogLevel.Info, "Starting GetActionResults()");
+
+            IEnumerable<Model.Action> actions = DbRelay.Get<Model.Action>();
+            List<ActionResult> results = new List<ActionResult>();
+
+            foreach (Model.Action action in actions)
+            {
+                results.AddRange(GetActionResults(action));
+            }
+
+            return results;
+        }
+
+        public List<ActionResult> GetActionResults(Model.Action action)
+        {
+            List<ActionResult> results = new List<ActionResult>();
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            RestRequest request = new RestRequest("action/{id}/status", Method.GET);
+            request.AddUrlSegment("id", action.ActionID.ToString());
+
+            try
+            {
+                // Execute the request
+                XDocument response = Execute(request);
+
+                foreach (XElement computerElement in response.Element("BESAPI").Element("ActionResults").Elements("Computer"))
+                {
+                    DateTime startTime = new DateTime();
+                    DateTime endTime = new DateTime();
+
+                    if (computerElement.Element("StartTime") != null)
+                    {
+                        startTime = Convert.ToDateTime(computerElement.Element("StartTime").Value.ToString());
+                    }
+                    if (computerElement.Element("EndTime") != null)
+                    {
+                        endTime = Convert.ToDateTime(computerElement.Element("EndTime").Value.ToString());
+                    }
+
+                    results.Add(new ActionResult(
+                                        action.ActionID,                                                            // Action ID
+                                        Int32.Parse(computerElement.Attribute("ID").Value.ToString()),              // Computer ID
+                                        computerElement.Element("Status").Value.ToString(),                         // Status
+                                        Int32.Parse(computerElement.Element("ApplyCount").Value.ToString()),        // Times applied
+                                        Int32.Parse(computerElement.Element("RetryCount").Value.ToString()),        // Times retried
+                                        Int32.Parse(computerElement.Element("LineNumber").Value.ToString()),        // Which script line is being executed
+                                        // Time execution started
+                                        (computerElement.Element("StartTime") != null) ? Convert.ToDateTime(computerElement.Element("StartTime").Value.ToString()) : (DateTime?)null,
+                                        // Time execution started
+                                        (computerElement.Element("EndTime") != null) ? Convert.ToDateTime(computerElement.Element("EndTime").Value.ToString()) : (DateTime?)null
+                        ));
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }         
+
+            return results;
+        }
+
         public List<Baseline> GetBaselines()
         {
             this.Logger.LogMessage(LogLevel.Info, "Starting GetBaselines()");
