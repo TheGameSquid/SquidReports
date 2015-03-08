@@ -209,6 +209,176 @@ namespace SquidReports.DataCollector.Plugin.BES.API
             return results;
         }
 
+        public List<Analysis> GetAnalyses()
+        {
+            this.Logger.LogMessage(LogLevel.Info, "Starting GetAnalyses()");
+
+            IEnumerable<Site> sites = DbRelay.Get<Site>();
+            List<Analysis> analyses = new List<Analysis>();
+
+            foreach (Site site in sites)
+            {
+                analyses.AddRange(GetAnalyses(site));
+            }
+
+            return analyses;
+        }
+
+        public List<Analysis> GetAnalyses(Site site)
+        {
+            List<Analysis> analyses = new List<Analysis>();
+
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            RestRequest request = new RestRequest("analyses/{sitetype}/{site}", Method.GET);
+            request.AddUrlSegment("sitetype", site.Type);
+            request.AddUrlSegment("site", site.Name);
+
+            // TODO: Handle master action site properly
+            if (site.Type == "master")
+            {
+                request = new RestRequest("analyses/{sitetype}", Method.GET);
+                request.AddUrlSegment("sitetype", site.Type);
+            }
+
+            try
+            {
+                analyses.AddRange(Execute<List<Analysis>>(request));
+
+                foreach (Analysis analysis in analyses)
+                {
+                    analysis.SiteID = site.ID;
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+
+            return analyses;
+        }
+
+        public List<AnalysisProperty> GetAnalysisProperties()
+        {
+            this.Logger.LogMessage(LogLevel.Info, "Starting GetAnalysisProperties()");
+
+            IEnumerable<Analysis> analyses = DbRelay.Get<Analysis>();
+            List<AnalysisProperty> properties = new List<AnalysisProperty>();
+
+            foreach (Analysis analysis in analyses)
+            {
+                properties.AddRange(GetAnalysisProperties(analysis));
+            }
+
+            return properties;
+        }
+
+        public List<AnalysisProperty> GetAnalysisProperties(Analysis analysis)
+        {
+            List<AnalysisProperty> properties = new List<AnalysisProperty>();
+
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            // The API does not assign an ID to the Site. Therefore, we use the ID assigned by the DB.
+            // For this reason we're fetching the list of sites from the DB again, so we can resolve ID->Name
+            Site dbSite = DbRelay.Get<Site>(new { ID = analysis.SiteID }).Single();
+
+            RestRequest request = new RestRequest("analysis/{sitetype}/{site}/{analysisid}", Method.GET);
+            request.AddUrlSegment("sitetype", dbSite.Type);
+            request.AddUrlSegment("site", dbSite.Name);
+            request.AddUrlSegment("analysisid", analysis.AnalysisID.ToString());
+
+            try
+            {
+                XDocument response = Execute(request);
+
+                foreach (XElement propertyElement in response.Element("BES").Element("Analysis").Elements("Property"))
+                {
+                    properties.Add(new AnalysisProperty(
+                                                analysis.ID,
+                                                Convert.ToInt32(propertyElement.Attribute("ID").Value),
+                                                propertyElement.Attribute("Name").Value)
+                                            );
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+            
+            return properties;
+        }
+
+        public List<AnalysisPropertyResult> GetAnalysisPropertyResults()
+        {
+            this.Logger.LogMessage(LogLevel.Info, "Starting GetAnalysisPropertyResults()");
+
+            IEnumerable<AnalysisProperty> properties = DbRelay.Get<AnalysisProperty>();
+            List<AnalysisPropertyResult> results = new List<AnalysisPropertyResult>();
+
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            foreach (AnalysisProperty property in properties)
+            {
+                results.AddRange(GetAnalysisPropertyResults(property));
+            }
+
+            return results;
+        }
+
+        public List<AnalysisPropertyResult> GetAnalysisPropertyResults(AnalysisProperty property)
+        {
+            this.Logger.LogMessage(LogLevel.Trace, String.Format("Collecting Property - {0}: Property: {1}", property.ID, property.Name));
+
+            List<AnalysisPropertyResult> results = new List<AnalysisPropertyResult>();
+
+            RestClient client = new RestClient(this.BaseURL);
+            client.Authenticator = this.Authenticator;
+
+            // We need to use Session Relevance to acquire property results
+            // We'll use the following Relevance query:
+            // {0}: The SequenceNo/Source ID of the Analysis property
+            // {1}: The Name of the Analysis
+            string relevance = "((id of it) of computer of it, values of it) of results from (BES Computers) of BES Properties whose ((source id of it = {0}) and (name of source analysis of it = \"{1}\"))";
+
+            try
+            {
+                // Unfortunately, we'll also need the name of the Parent Analysis. For that, we'll need to query the DB
+                Analysis dbAnalysis = DbRelay.Get<Analysis>(new { ID = property.AnalysisID }).Single();
+
+                // Let's compose the request string
+                RestRequest request = new RestRequest("query", Method.GET);
+                //request.AddQueryParameter("relevance", String.Format(relevance, computer.ComputerID.ToString(), property.SequenceNo.ToString(), analysis.Name));
+                request.AddQueryParameter("relevance", String.Format(relevance, property.SequenceNo.ToString(), dbAnalysis.Name));
+
+                XDocument response = Execute(request);
+
+                // Let's check if the Result element is empty
+                if (response.Element("BESAPI").Element("Query").Element("Result").Elements().Count() > 0)
+                {
+                    // All answers are wrapped inside a "Tuple" element
+                    foreach (XElement tupleElement in response.Element("BESAPI").Element("Query").Element("Result").Elements("Tuple"))
+                    {
+                        // The Result consists of two parts:
+                        //  1) The ComputerID
+                        //  2) The value of the retrieved property sequence for said ComputerID
+                        XElement computerElement = tupleElement.Elements("Answer").First();
+                        XElement valueElement = tupleElement.Elements("Answer").Last();
+                        results.Add(new AnalysisPropertyResult(property.ID, Convert.ToInt32(computerElement.Value.ToString()), valueElement.Value.ToString()));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+
+            return results;
+        }
+
         public List<Baseline> GetBaselines()
         {
             this.Logger.LogMessage(LogLevel.Info, "Starting GetBaselines()");

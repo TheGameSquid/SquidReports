@@ -5,7 +5,7 @@ using RestSharp.Deserializers;
 namespace SquidReports.DataCollector.Plugin.BES.Model
 {
     [Table(Schema = "BESEXT", Table = "ANALYSIS_PROPERTY")]
-    public class AnalysisProperty
+    public class AnalysisProperty : ICollectible
     {
         public AnalysisProperty()
         {

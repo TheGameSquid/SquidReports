@@ -45,6 +45,9 @@ namespace SquidReports.DataCollector.Plugin.BES
             CollectActions();
             CollectActionDetails();
             CollectActionResults();
+            CollectAnalyses();
+            CollectAnalysisProperties();
+            CollectAnalysisPropertyResults();
         }
 
         public void CollectActions()
@@ -93,6 +96,60 @@ namespace SquidReports.DataCollector.Plugin.BES
                 foreach (ActionResult actionResult in actionResults)
                 {
                     DbRelay.Put<ActionResult>(actionResult);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectAnalyses()
+        {
+            try
+            {
+                List<Analysis> analyses = API.GetAnalyses();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} Analyses!", analyses.Count));
+
+                foreach (Analysis analysis in analyses)
+                {
+                    DbRelay.Put<Analysis>(analysis);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectAnalysisProperties()
+        {
+            try
+            {
+                List<AnalysisProperty> analysisProperties = API.GetAnalysisProperties();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} AnalysisProperties!", analysisProperties.Count));
+
+                foreach (AnalysisProperty analysisProperty in analysisProperties)
+                {
+                    DbRelay.Put<AnalysisProperty>(analysisProperty);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Logger.LogException(LogLevel.Error, e.Message, e);
+            }
+        }
+
+        public void CollectAnalysisPropertyResults()
+        {
+            try
+            {
+                List<AnalysisPropertyResult> analysisPropertyResults = API.GetAnalysisPropertyResults();
+                this.Logger.LogMessage(LogLevel.Info, String.Format("Collected {0} AnalysisPropertyResults!", analysisPropertyResults.Count));
+
+                foreach (AnalysisPropertyResult analysisPropertyResult in analysisPropertyResults)
+                {
+                    DbRelay.Put<AnalysisPropertyResult>(analysisPropertyResult);
                 }
             }
             catch (Exception e)
