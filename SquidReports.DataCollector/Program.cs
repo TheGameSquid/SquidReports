@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using SquidReports.DataCollector.API;
+using SquidReports.DataCollector.Config;
 using SquidReports.DataCollector.Interface;
 using SquidReports.DataCollector.Plugin.Test;
 using SquidReports.DataCollector.Plugin.BES;
@@ -16,6 +17,9 @@ namespace SquidReports.DataCollector
     {
         static void Main(string[] args)
         {
+            PluginConfigurationSection pluginConfigSection = ConfigurationManager.GetSection("PluginSection") as PluginConfigurationSection;
+            PluginConfiguration pluginConfig = pluginConfigSection.Plugins[0];
+
             BESCollector collector = new BESCollector();
             CollectorValidation(collector);
             CollectorStartup(collector);

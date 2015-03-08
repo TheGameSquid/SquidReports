@@ -61,10 +61,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\DbRelay.cs" />
+    <Compile Include="Config\PluginConfiguration.cs" />
+    <Compile Include="Config\PluginConfigurationCollection.cs" />
+    <Compile Include="Config\PluginConfigurationSection.cs" />
     <Compile Include="Logging\NLogger.cs" />
     <Compile Include="Logging\NLogManager.cs" />
     <Compile Include="Helpers\Crypto.cs" />
     <Compile Include="Helpers\Sql.cs" />
+    <Compile Include="PluginManager\PluginManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
