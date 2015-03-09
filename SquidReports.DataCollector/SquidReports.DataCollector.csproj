@@ -81,6 +81,7 @@
     <Compile Include="Helpers\Crypto.cs" />
     <Compile Include="Helpers\Sql.cs" />
     <Compile Include="PluginManager\CollectorJob.cs" />
+    <Compile Include="PluginManager\CollectorJobListener.cs" />
     <Compile Include="PluginManager\PluginManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

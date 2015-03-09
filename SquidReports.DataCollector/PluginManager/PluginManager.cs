@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.IO;
 using System.Reflection;
 using SquidReports.DataCollector.Config;
 using SquidReports.DataCollector.Interface;
+using Dapper;
 using Quartz;
 using Quartz.Impl;
+using Quartz.Impl.Matchers;
 
 namespace SquidReports.DataCollector
 {
@@ -70,6 +73,8 @@ namespace SquidReports.DataCollector
                                 throw new ApplicationException(String.Format("No CollectorType defined for ICollector: {0}", collector.GetType().Name));
                             }
 
+                            CollectorValidation(collector);
+
                             // Call Init on the Collector, prepare it for scheduling
                             collector.Init(this.LogManager, new DbRelay(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, collectorType));
 
@@ -82,14 +87,16 @@ namespace SquidReports.DataCollector
                                 .Build();
 
                             ITrigger trigger = TriggerBuilder.Create()
-                                .WithCronSchedule("0 0/2 * 1/1 * ? *")
+                                .WithCronSchedule("0 0/1 * 1/1 * ? *")
                                 .StartNow()
                                 .Build();
 
                             // Tell Quartz to schedule the job using our trigger
-                            scheduler.ScheduleJob(job, trigger);
+                            scheduler.ScheduleJob(job, trigger);                         
                         }
                     }
+
+                    scheduler.ListenerManager.AddJobListener(new CollectorJobListener(LogManager), GroupMatcher<JobKey>.AnyGroup());
 
                     if (collector == null)
                     {
@@ -99,6 +106,32 @@ namespace SquidReports.DataCollector
                 catch (Exception e)
                 {
                     this.Logger.LogException(LogLevel.Warn, String.Format("Failed to load assembly containing {0}: {1}", pluginConfig.CollectorName, e.Message), e);
+                }
+            }
+        }
+
+        private void CollectorValidation(ICollector collector)
+        {
+            // Explore the full list of ICollectibles in the ICollector assembly
+            IEnumerable<Type> types = collector.GetType().Assembly.GetTypes().Where(t => t.GetInterfaces().Contains(typeof(ICollectible)) && t.GetConstructor(Type.EmptyTypes) != null);
+
+            SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+
+            foreach (Type type in types)
+            {
+                // Check if the data model has been registered
+                if (!connection.Query("SELECT * FROM [SQR].[DATA_MODEL] WHERE ModelName = @ModelName AND AssemblyName = @AssemblyName", new { ModelName = type.Name, AssemblyName = type.Assembly.GetName().Name }).Any())
+                {
+                    // It's not there yet, register in in the [SQR].[DATA_MODEL] table
+                    connection.Execute("INSERT INTO [SQR].[DATA_MODEL] (ModelName, ModelNameFull, AssemblyName, AssemblyNameFull, NameSpace) VALUES (@ModelName, @ModelNameFull, @AssemblyName, @AssemblyNameFull, @NameSpace)",
+                                                                        new
+                                                                        {
+                                                                            ModelName = type.Name,
+                                                                            ModelNameFull = String.Format("{0}.{1}", type.Namespace, type.Name),
+                                                                            AssemblyName = type.Assembly.GetName().Name,
+                                                                            AssemblyNameFull = type.Assembly.FullName,
+                                                                            type.Namespace
+                                                                        });
                 }
             }
         }
