@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\DbRelay.cs" />
+    <Compile Include="API\DbUtils.cs" />
     <Compile Include="Config\PluginConfiguration.cs" />
     <Compile Include="Config\PluginConfigurationCollection.cs" />
     <Compile Include="Config\PluginConfigurationSection.cs" />
