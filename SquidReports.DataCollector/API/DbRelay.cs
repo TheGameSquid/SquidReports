@@ -8,7 +8,7 @@ using SquidReports.DataCollector.Interface;
 using Dapper;
 using Newtonsoft.Json;
 
-namespace SquidReports.DataCollector.API
+namespace SquidReports.DataCollector
 {
     public class DbRelay : IDbRelay
     {
