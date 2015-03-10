@@ -22,14 +22,13 @@ namespace SquidReports.DataCollector
             this.Logger = logManager.GetCurrentClassLogger();
             this.Collectors = new List<CollectorJob>();
             AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += ReflectionOnlyAssemblyResolve;
-            Init();
         }
 
         public List<CollectorJob> Collectors   { get; set; }
         public ILogger Logger               { get; set; }
         public ILogManager LogManager { get; set; }
 
-        private void Init()
+        public void Start()
         {
             // Grab the Scheduler instance from the Factory and start it
             IScheduler scheduler = StdSchedulerFactory.GetDefaultScheduler();

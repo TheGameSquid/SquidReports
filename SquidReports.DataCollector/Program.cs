@@ -27,6 +27,9 @@ namespace SquidReports.DataCollector
             NLogManager nLogManager = new NLogManager();
             PluginManager manager = new PluginManager(nLogManager);
 
+            // Start the plugin manager, and start all configured jobs
+            manager.Start();
+
             //BESCollector collector = new BESCollector();
             //CollectorValidation(collector);
             //CollectorStartup(collector);
