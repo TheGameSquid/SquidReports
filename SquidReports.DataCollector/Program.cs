@@ -7,7 +7,6 @@ using System.Reflection;
 using SquidReports.DataCollector.Config;
 using SquidReports.DataCollector.Interface;
 using SquidReports.DataCollector.Plugin.Test;
-//using SquidReports.DataCollector.Plugin.BES;
 using Common.Logging;
 using Common.Logging.Configuration;
 using Common.Logging.NLog;

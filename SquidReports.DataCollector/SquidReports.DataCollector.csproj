@@ -72,11 +72,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API\DbRelay.cs" />
-    <Compile Include="API\DbUtils.cs" />
+    <Compile Include="DB\DbRelay.cs" />
+    <Compile Include="DB\DbUtils.cs" />
     <Compile Include="Config\PluginConfiguration.cs" />
     <Compile Include="Config\PluginConfigurationCollection.cs" />
     <Compile Include="Config\PluginConfigurationSection.cs" />
+    <Compile Include="DB\HashedObject.cs" />
     <Compile Include="Logging\NLogger.cs" />
     <Compile Include="Logging\NLogManager.cs" />
     <Compile Include="Helpers\Crypto.cs" />
