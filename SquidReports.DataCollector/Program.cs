@@ -11,6 +11,12 @@ using Common.Logging;
 using Common.Logging.Configuration;
 using Common.Logging.NLog;
 using Dapper;
+using Topshelf;
+using Topshelf.Configurators;
+using Topshelf.HostConfigurators;
+using Topshelf.Hosts;
+using Topshelf.Runtime;
+using Topshelf.ServiceConfigurators;
 
 namespace SquidReports.DataCollector
 {
@@ -18,16 +24,16 @@ namespace SquidReports.DataCollector
     {
         static void Main(string[] args)
         {
-            PluginConfigurationSection pluginConfigSection = ConfigurationManager.GetSection("PluginSection") as PluginConfigurationSection;
-            PluginConfiguration pluginConfig = pluginConfigSection.Plugins[0];
+            //PluginConfigurationSection pluginConfigSection = ConfigurationManager.GetSection("PluginSection") as PluginConfigurationSection;
+            //PluginConfiguration pluginConfig = pluginConfigSection.Plugins[0];
 
             Common.Logging.LogManager.Adapter = new Common.Logging.NLog.NLogLoggerFactoryAdapter(new Common.Logging.Configuration.NameValueCollection());
             
-            NLogManager nLogManager = new NLogManager();
-            PluginManager manager = new PluginManager(nLogManager);
+            //NLogManager nLogManager = new NLogManager();
+            //PluginManager manager = new PluginManager(nLogManager);
 
-            // Start the plugin manager, and start all configured jobs
-            manager.Start();
+            //// Start the plugin manager, and start all configured jobs
+            //manager.Start();
 
             //BESCollector collector = new BESCollector();
             //CollectorValidation(collector);
@@ -35,7 +41,23 @@ namespace SquidReports.DataCollector
             //CollectorExecute(collector);          
             //CollectorPostRun(collector);
 
-            Console.Read();
+            HostFactory.Run(x =>
+            {
+                x.Service<PluginService>(s =>
+                {
+                    s.ConstructUsing(name => new PluginService());
+                    s.WhenStarted(tc => tc.Start());
+                    s.WhenStopped(tc => tc.Stop());
+                });
+                //x.RunAsLocalSystem();
+                x.RunAs(@"MSNET\EXF284", "freerik05");
+
+                x.StartAutomatically();
+
+                x.SetDescription("SquidReports.DataCollector is a generic and pluggable data collection system for reporting purposes");
+                x.SetDisplayName("SquidReports.DataCollector");
+                x.SetServiceName("SquidReports.DataCollector");
+            });
         }
 
         private static void CollectorValidation(ICollector collector)

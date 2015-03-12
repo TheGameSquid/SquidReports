@@ -61,42 +61,42 @@ namespace SquidReports.DataCollector
 
         public void Put<T>(List<ICollectible> data)
         {
-            if (CollectorType == CollectorType.Absolute)
-            {
-                int modelID = GetModelID(typeof(T));
+            //if (CollectorType == CollectorType.Absolute)
+            //{
+            //    int modelID = GetModelID(typeof(T));
 
-                // TODO: Turn all of this into upsert using temp-table?
+            //    // TODO: Turn all of this into upsert using temp-table?
 
-                // These will be bulk-inserted afterwards
-                List<ICollectible> dataInserts = new List<ICollectible>();
-                List<HashedObject> hashInserts = new List<HashedObject>();
+            //    // These will be bulk-inserted afterwards
+            //    List<ICollectible> dataInserts = new List<ICollectible>();
+            //    List<HashedObject> hashInserts = new List<HashedObject>();
 
-                // These will be bulk-upserted afterwards
-                List<ICollectible> dataUpserts = new List<ICollectible>();
-                List<HashedObject> hashInserts = new List<HashedObject>();
+            //    // These will be bulk-upserted afterwards
+            //    List<ICollectible> dataUpserts = new List<ICollectible>();
+            //    List<HashedObject> hashInserts = new List<HashedObject>();
 
-                // Pull down the entire hash list of data for this model
-                IEnumerable<String> keyHashes = this.Connection.Query<String>("SELECT KeyHash FROM [SQR].[DATA_HASH] WHERE ModelID = @ModelID", new { ModelID = modelID });
+            //    // Pull down the entire hash list of data for this model
+            //    IEnumerable<String> keyHashes = this.Connection.Query<String>("SELECT KeyHash FROM [SQR].[DATA_HASH] WHERE ModelID = @ModelID", new { ModelID = modelID });
 
-                foreach (ICollectible dataItem in data)
-                {
-                    Dictionary<string, object> keyValues = GetKeyValues<T>(dataItem);
-                    Dictionary<string, object> nonKeyValues = GetNonKeyValues<T>(dataItem);
+            //    foreach (ICollectible dataItem in data)
+            //    {
+            //        Dictionary<string, object> keyValues = GetKeyValues<T>(dataItem);
+            //        Dictionary<string, object> nonKeyValues = GetNonKeyValues<T>(dataItem);
 
-                    string keyHash = Helpers.Crypto.GetMD5HashFromObject(keyValues);
-                    string nonKeyHash = Helpers.Crypto.GetMD5HashFromObject(nonKeyValues);
+            //        string keyHash = Helpers.Crypto.GetMD5HashFromObject(keyValues);
+            //        string nonKeyHash = Helpers.Crypto.GetMD5HashFromObject(nonKeyValues);
 
-                    if (IsNew<T>(keyHash))
-                    {
-                        dataInserts.Add(dataItem);
-                        hashInserts.Add(new HashedObject(modelID, keyHash, nonKeyHash));
-                    }
-                    else IsToUpdate<T>(keyHash, nonKeyHash)
-                    {
+            //        if (IsNew<T>(keyHash))
+            //        {
+            //            dataInserts.Add(dataItem);
+            //            hashInserts.Add(new HashedObject(modelID, keyHash, nonKeyHash));
+            //        }
+            //        else IsToUpdate<T>(keyHash, nonKeyHash)
+            //        {
 
-                    }
-                }
-            }
+            //        }
+            //    }
+            //}
         }
 
         public Dictionary<string, object> GetKeyValues<T>(ICollectible data)

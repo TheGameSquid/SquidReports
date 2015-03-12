@@ -21,18 +21,19 @@ namespace SquidReports.DataCollector
             this.LogManager = logManager;
             this.Logger = logManager.GetCurrentClassLogger();
             this.Collectors = new List<CollectorJob>();
+            this.Scheduler = StdSchedulerFactory.GetDefaultScheduler();
             AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += ReflectionOnlyAssemblyResolve;
         }
 
-        public List<CollectorJob> Collectors   { get; set; }
-        public ILogger Logger               { get; set; }
-        public ILogManager LogManager { get; set; }
+        public List<CollectorJob> Collectors    { get; set; }
+        public ILogger Logger                   { get; set; }
+        public ILogManager LogManager           { get; set; }
+        public IScheduler Scheduler             { get; set;}
 
         public void Start()
         {
             // Grab the Scheduler instance from the Factory and start it
-            IScheduler scheduler = StdSchedulerFactory.GetDefaultScheduler();
-            scheduler.Start();
+            this.Scheduler.Start();
 
             // Read the Plugins defined in the App.Config
             PluginConfigurationSection pluginConfigSection = ConfigurationManager.GetSection("PluginSection") as PluginConfigurationSection;
@@ -86,16 +87,16 @@ namespace SquidReports.DataCollector
                                 .Build();
 
                             ITrigger trigger = TriggerBuilder.Create()
-                                .WithCronSchedule("0 0/1 * 1/1 * ? *")
+                                .WithCronSchedule(pluginConfig.CronExpression)
                                 .StartNow()
                                 .Build();
 
                             // Tell Quartz to schedule the job using our trigger
-                            scheduler.ScheduleJob(job, trigger);                         
+                            this.Scheduler.ScheduleJob(job, trigger);                         
                         }
                     }
 
-                    scheduler.ListenerManager.AddJobListener(new CollectorJobListener(LogManager), GroupMatcher<JobKey>.AnyGroup());
+                    this.Scheduler.ListenerManager.AddJobListener(new CollectorJobListener(LogManager), GroupMatcher<JobKey>.AnyGroup());
 
                     if (collector == null)
                     {
@@ -107,6 +108,13 @@ namespace SquidReports.DataCollector
                     this.Logger.LogException(LogLevel.Warn, String.Format("Failed to load assembly containing {0}: {1}", pluginConfig.CollectorName, e.Message), e);
                 }
             }
+        }
+
+        public void Stop()
+        {
+            // Shuts down the scheduler
+            // TODO: Do I need to do anything else?
+            this.Scheduler.Shutdown();
         }
 
         private void CollectorValidation(ICollector collector)

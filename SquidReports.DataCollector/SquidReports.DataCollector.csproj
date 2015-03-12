@@ -70,6 +70,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Topshelf">
+      <HintPath>..\packages\Topshelf.3.1.4\lib\net40-full\Topshelf.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DB\DbRelay.cs" />
@@ -85,6 +88,7 @@
     <Compile Include="PluginManager\CollectorJob.cs" />
     <Compile Include="PluginManager\CollectorJobListener.cs" />
     <Compile Include="PluginManager\PluginManager.cs" />
+    <Compile Include="PluginManager\PluginService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
